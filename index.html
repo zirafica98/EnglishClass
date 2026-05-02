@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="sr-Latn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>face2face Elementary · 1A–12C</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Preskoči na sadržaj</a>
+    <div class="layout">
+      <aside class="nav-pane" aria-label="Lista lekcija">
+        <div class="brand">
+          <p class="eyebrow">face2face</p>
+          <h1 id="course-title" class="brand-title">Elementary</h1>
+          <p id="course-notes" class="brand-notes muted"></p>
+        </div>
+        <div class="nav-head">
+          <span class="label">Lekcije 1A – 12C</span>
+        </div>
+        <nav id="lesson-nav"></nav>
+      </aside>
+      <main id="main" class="content" tabindex="-1">
+        <article id="lesson-view" aria-live="polite"></article>
+      </main>
+    </div>
+    <script src="./data/lessons.embed.js"></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
