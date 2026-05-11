@@ -21,6 +21,7 @@ OUT_EMBED = ROOT / "site" / "data" / "lessons.embed.js"
 sys.path.insert(0, str(Path(__file__).parent))
 from vocab_data import LESSONS_VOCAB
 from unit_tests import UNIT_TESTS
+from prep_tests_data import PREP_PRACTICE_TESTS
 
 # ---------------------------------------------------------------------------
 # Mapiranje lekcija → PDF stranice (1-based).
@@ -860,13 +861,16 @@ def main() -> None:
             "notes_sr": (
                 "Za svaku lekciju imaš ručno izvučen rečnik (English ↔ srpski), ključne fraze "
                 "i gramatičke primere iz prvog zadatka i Real World/Help with Grammar boksova, "
-                "uz srpski rezime i prioritete učenja. Posle svake jedinice imaš test od 10 pitanja "
+                "uz srpski rezime i prioritete učenja. U meniju „Vežbanje · Priprema“ imaš 10 listova "
+                "za vežbanje u formatu školske pripreme (Present Simple/Continuous, Past Simple, verb+ing/to, "
+                "komparativi, prilozi, kolokacije, like/look like). Posle svake jedinice imaš test od 10 pitanja "
                 "sa instant proverom rezultata. Extra Practice je izdvojen iz dvostranice "
                 "na kraju knjige po podlekcijama. Lekcija 12D ne postoji u knjizi (jedinica 12 ima samo A, B, C)."
             ),
         },
         "lessons": lessons,
         "unit_tests": unit_tests_payload,
+        "prep_practice_tests": PREP_PRACTICE_TESTS,
     }
     OUT_JSON.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     OUT_EMBED.write_text(

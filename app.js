@@ -3,7 +3,14 @@
 
   const root = document.getElementById("lesson-view");
   const nav = document.getElementById("lesson-nav");
+  const navPane = nav ? nav.closest(".nav-pane") : null;
   const data = window.__LESSONS_DATA__ || null;
+
+  function clearNavActives() {
+    if (navPane) {
+      navPane.querySelectorAll("button.active").forEach((b) => b.classList.remove("active"));
+    }
+  }
 
   if (!data || !root || !nav) {
     console.error("Nedostaju podaci ili markup.");
@@ -144,6 +151,314 @@
     });
   }
 
+  function prepLineHasBlank(line) {
+    return /_{3,}/.test(line);
+  }
+
+  function prepStripItemPrefix(s) {
+    return String(s).replace(/^[a-z]\)\s*/i, "").trim();
+  }
+
+  /** Jedinstvena normalizacija za poređenje (bez ocene znakova interpunkcije na kraju). */
+  function prepNormalize(s) {
+    let t = prepStripItemPrefix(String(s))
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+    t = t.replace(/[.?!…]+$/g, "").trim();
+    return t;
+  }
+
+  function prepVariantsFromSegment(segment) {
+    return String(segment)
+      .split(/\s*\/\s*/)
+      .map((p) => prepNormalize(p))
+      .filter(Boolean);
+  }
+
+  /** Više delova odvojeno tačka-zarezom (više praznina u jednom redu). */
+  function prepSegmentsFromKey(expectedFull) {
+    const core = prepStripItemPrefix(expectedFull);
+    if (!core) return [];
+    return core.split(/\s*;\s*/).map((x) => x.trim()).filter(Boolean);
+  }
+
+  function prepClearRowMarks(row) {
+    row.classList.remove("prep-row-ok", "prep-row-warn", "prep-row-bad");
+    row.querySelectorAll(".prep-input, .prep-area").forEach((el) => {
+      el.classList.remove("prep-check-ok", "prep-check-bad", "prep-check-empty");
+    });
+  }
+
+  function prepGradeRow(row) {
+    const enc = row.getAttribute("data-expected-enc") || "";
+    let expectedFull = "";
+    try {
+      expectedFull = decodeURIComponent(enc);
+    } catch {
+      expectedFull = "";
+    }
+
+    const inputs = [...row.querySelectorAll(".prep-input, .prep-area")];
+    prepClearRowMarks(row);
+
+    if (!inputs.length || !expectedFull.trim() || expectedFull.trim() === "—") {
+      row.classList.add("prep-row-warn");
+      return { ok: 0, bad: 0, empty: 0, skip: 1 };
+    }
+
+    const segments = prepSegmentsFromKey(expectedFull);
+
+    if (inputs.length >= 2) {
+      if (segments.length === inputs.length) {
+        let ok = 0;
+        let bad = 0;
+        let empty = 0;
+        inputs.forEach((inp, i) => {
+          const raw = inp.value;
+          if (!raw.trim()) {
+            inp.classList.add("prep-check-empty");
+            empty++;
+            return;
+          }
+          const u = prepNormalize(raw);
+          const vars = prepVariantsFromSegment(segments[i] || "");
+          const hit = vars.some((v) => v === u);
+          if (hit) {
+            inp.classList.add("prep-check-ok");
+            ok++;
+          } else {
+            inp.classList.add("prep-check-bad");
+            bad++;
+          }
+        });
+        if (bad > 0) row.classList.add("prep-row-bad");
+        else if (empty > 0) row.classList.add("prep-row-warn");
+        else row.classList.add("prep-row-ok");
+        return { ok, bad, empty, skip: 0 };
+      }
+      const joinedUser = prepNormalize(inputs.map((i) => i.value).join("; "));
+      const joinedKey = prepNormalize(segments.join("; "));
+      if (!inputs.some((i) => i.value.trim())) {
+        inputs.forEach((i) => i.classList.add("prep-check-empty"));
+        row.classList.add("prep-row-bad");
+        return { ok: 0, bad: 0, empty: inputs.length, skip: 0 };
+      }
+      if (segments.length === 1 && inputs.length > 1) {
+        inputs.forEach((inp) => {
+          if (!inp.value.trim()) inp.classList.add("prep-check-empty");
+          else inp.classList.add("prep-check-bad");
+        });
+        row.classList.add("prep-row-warn");
+        return { ok: 0, bad: inputs.length, empty: 0, skip: 1 };
+      }
+      const hit = joinedUser === joinedKey;
+      let emptyJoin = 0;
+      inputs.forEach((inp) => {
+        if (!inp.value.trim()) {
+          inp.classList.add("prep-check-empty");
+          emptyJoin++;
+        } else if (hit) inp.classList.add("prep-check-ok");
+        else inp.classList.add("prep-check-bad");
+      });
+      if (hit) {
+        row.classList.add("prep-row-ok");
+        return { ok: inputs.filter((i) => i.value.trim()).length, bad: 0, empty: emptyJoin, skip: 0 };
+      }
+      row.classList.add("prep-row-bad");
+      return {
+        ok: 0,
+        bad: inputs.filter((i) => i.value.trim()).length,
+        empty: emptyJoin,
+        skip: 0,
+      };
+    }
+
+    const inp = inputs[0];
+    const raw = inp.value;
+    if (!raw.trim()) {
+      inp.classList.add("prep-check-empty");
+      row.classList.add("prep-row-bad");
+      return { ok: 0, bad: 0, empty: 1, skip: 0 };
+    }
+    const u = prepNormalize(raw);
+    const stripped = prepStripItemPrefix(expectedFull);
+    let hit = false;
+    if (stripped.includes("/")) {
+      hit = stripped
+        .split(/\s*\/\s*/)
+        .some((p) => prepNormalize(p) === u);
+    } else {
+      hit = prepNormalize(stripped) === u;
+    }
+    if (hit) {
+      inp.classList.add("prep-check-ok");
+      row.classList.add("prep-row-ok");
+      return { ok: 1, bad: 0, empty: 0, skip: 0 };
+    }
+    inp.classList.add("prep-check-bad");
+    row.classList.add("prep-row-bad");
+    return { ok: 0, bad: 1, empty: 0, skip: 0 };
+  }
+
+  /**
+   * Jedna stavka zadatka: ili polja gde su ___ crtice, ili jedno široko polje za celu rečenicu.
+   * expected — tekst iz ključa za tu stavku (prikaže se kad korisnik traži predlog).
+   */
+  function renderPrepItem(line, secNum, rowIdx, expected) {
+    const exp = expected != null ? String(expected) : "—";
+    const enc = encodeURIComponent(exp);
+    const hintBlock = `<p class="prep-expected" hidden><span class="prep-expected-label">Predlog:</span> ${escapeHtml(exp)}</p>`;
+
+    if (!prepLineHasBlank(line)) {
+      return `
+        <li class="prep-row prep-row-wide" data-sec="${secNum}" data-row="${rowIdx}" data-expected-enc="${enc}">
+          <div class="prep-prompt">${escapeHtml(line)}</div>
+          <textarea class="prep-area" rows="2" spellcheck="false" data-sec="${secNum}" data-row="${rowIdx}" placeholder="Ovde upiši odgovor…"></textarea>
+          ${hintBlock}
+        </li>`;
+    }
+
+    const parts = line.split(/_{3,}/);
+    const chunks = [];
+    parts.forEach((part, i) => {
+      chunks.push(`<span class="prep-part">${escapeHtml(part)}</span>`);
+      if (i < parts.length - 1) {
+        chunks.push(
+          `<input type="text" class="prep-input" spellcheck="false" autocapitalize="off" autocomplete="off" data-sec="${secNum}" data-row="${rowIdx}" data-part="${i}" />`
+        );
+      }
+    });
+
+    return `
+      <li class="prep-row prep-row-fill" data-sec="${secNum}" data-row="${rowIdx}" data-expected-enc="${enc}">
+        <div class="prep-line-wrap">${chunks.join("")}</div>
+        ${hintBlock}
+      </li>`;
+  }
+
+  function renderPrepPractice(pt) {
+    const answersBySec = new Map();
+    (pt.answer_key || []).forEach((block) => {
+      answersBySec.set(block.n, block.items || []);
+    });
+
+    const sectionsHtml = (pt.sections || [])
+      .map((sec) => {
+        const expList = answersBySec.get(sec.n) || [];
+        const items = (sec.items || [])
+          .map((line, i) => renderPrepItem(line, sec.n, i, expList[i]))
+          .join("");
+        return `
+        <section class="prep-sec" id="prep-sec-${sec.n}">
+          <h3 class="prep-sec-head">${escapeHtml(sec.instruction)}</h3>
+          <ul class="prep-items">${items}</ul>
+        </section>`;
+      })
+      .join("");
+
+    const answersHtml = (pt.answer_key || [])
+      .map(
+        (block) => `
+        <section class="prep-ak-sec">
+          <h4 class="prep-ak-h">Sekcija ${block.n}</h4>
+          <ul class="prep-ak-list">
+            ${(block.items || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
+          </ul>
+        </section>`
+      )
+      .join("");
+
+    const prepActionsBar = `
+        <div class="prep-actions">
+          <button type="button" class="btn-primary prep-action-check">Proveri moje odgovore</button>
+          <button type="button" class="btn-secondary prep-action-hints">Prikaži predloge uz zadatke</button>
+          <button type="button" class="btn-secondary prep-action-clear">Očisti sva polja</button>
+        </div>`;
+
+    root.innerHTML = `
+      <header class="lesson-head prep-head">
+        <p class="lesson-code">${escapeHtml(pt.title_sr)}
+          <span class="book-page">7A–10B</span>
+        </p>
+        <h2>TEST – PREPARATION</h2>
+        <p class="lead">${escapeHtml(pt.scope_sr || "")}</p>
+        <p class="prep-cta-banner"><strong>Provera:</strong> kada popuniš zadatke, skroluj do <strong>kraja stranice</strong> — tamo su dugmad <strong>„Proveri moje odgovore“</strong>, predlozi i brisanje.</p>
+        <p class="prep-note">Tačna polja postanu zelena, netačna crvena, prazna žuta. Poređenje ignoriše velika/mala slova i znak na kraju (. ?). Ako u ključu piše <strong>/</strong>, važi bilo koja varijanta.</p>
+      </header>
+      <article class="prep-sheet">
+        ${sectionsHtml}
+        ${prepActionsBar}
+        <p class="prep-check-summary" id="prep-check-summary" aria-live="polite"></p>
+      </article>
+      <details class="prep-key-wrap">
+        <summary class="prep-key-sum">Ceo ključ odgovora (sve sekcije)</summary>
+        <div class="prep-key-body">${answersHtml}</div>
+      </details>
+    `;
+
+    const summaryEl = root.querySelector("#prep-check-summary");
+    let hintsOn = false;
+
+    function setHintsLabels(text) {
+      root.querySelectorAll(".prep-action-hints").forEach((b) => {
+        b.textContent = text;
+      });
+    }
+
+    const runCheck = () => {
+      const rows = root.querySelectorAll(".prep-row");
+      let ok = 0;
+      let bad = 0;
+      let empty = 0;
+      let skip = 0;
+      rows.forEach((row) => {
+        const r = prepGradeRow(row);
+        ok += r.ok;
+        bad += r.bad;
+        empty += r.empty;
+        skip += r.skip || 0;
+      });
+      if (summaryEl) {
+        const parts = [`Tačno polja: ${ok}`, `netačno: ${bad}`, `prazno: ${empty}`];
+        if (skip) parts.push(`bez ključa: ${skip}`);
+        summaryEl.textContent = parts.join(" · ");
+      }
+    };
+
+    root.querySelectorAll(".prep-action-check").forEach((btn) => {
+      btn.addEventListener("click", runCheck);
+    });
+
+    root.querySelectorAll(".prep-action-hints").forEach((hintsBtn) => {
+      hintsBtn.addEventListener("click", () => {
+        hintsOn = !hintsOn;
+        root.querySelectorAll(".prep-expected").forEach((el) => {
+          el.hidden = !hintsOn;
+        });
+        setHintsLabels(hintsOn ? "Sakrij predloge uz zadatke" : "Prikaži predloge uz zadatke");
+      });
+    });
+
+    root.querySelectorAll(".prep-action-clear").forEach((clearBtn) => {
+      clearBtn.addEventListener("click", () => {
+        root.querySelectorAll(".prep-row").forEach((row) => prepClearRowMarks(row));
+        root.querySelectorAll(".prep-input, .prep-area").forEach((el) => {
+          el.value = "";
+        });
+        if (summaryEl) summaryEl.textContent = "";
+        if (hintsOn) {
+          hintsOn = false;
+          root.querySelectorAll(".prep-expected").forEach((el) => {
+            el.hidden = true;
+          });
+          setHintsLabels("Prikaži predloge uz zadatke");
+        }
+      });
+    });
+  }
+
   function renderPairTable(pairs, opts) {
     if (!pairs || !pairs.length) return "";
     const rows = pairs
@@ -272,6 +587,15 @@
     `;
   }
 
+  root.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!t.matches(".prep-input, .prep-area")) return;
+    const row = t.closest(".prep-row");
+    if (row) prepClearRowMarks(row);
+    const sum = document.getElementById("prep-check-summary");
+    if (sum) sum.textContent = "";
+  });
+
   orderedKeys.forEach((key, idx) => {
     const lessons = byUnit.get(key);
     const details = document.createElement("details");
@@ -297,7 +621,7 @@
       btn.title = lesson.title_en;
       btn.dataset.id = lesson.id;
       btn.addEventListener("click", () => {
-        nav.querySelectorAll("button.active").forEach((b) => b.classList.remove("active"));
+        clearNavActives();
         btn.classList.add("active");
         renderLesson(lesson);
         if (window.matchMedia("(max-width: 900px)").matches) {
@@ -327,7 +651,7 @@
       tbtn.title = `Test posle Jedinice ${key}`;
       tbtn.dataset.testUnit = String(test.unit);
       tbtn.addEventListener("click", () => {
-        nav.querySelectorAll("button.active").forEach((b) => b.classList.remove("active"));
+        clearNavActives();
         tbtn.classList.add("active");
         renderTest(test);
         if (window.matchMedia("(max-width: 900px)").matches) {
@@ -343,6 +667,53 @@
     details.append(ul);
     nav.append(details);
   });
+
+  const prepTests = data.prep_practice_tests || [];
+  if (prepTests.length && navPane) {
+    const prepDetails = document.createElement("details");
+    prepDetails.className = "prep-nav-details";
+    const prepSum = document.createElement("summary");
+    const prepTitle = document.createElement("span");
+    prepTitle.textContent = "Vežbanje · Priprema";
+    const prepChip = document.createElement("span");
+    prepChip.className = "unit-chip";
+    prepChip.textContent = "7A–10B · 1–10";
+    prepSum.append(prepTitle, prepChip);
+    prepDetails.appendChild(prepSum);
+
+    const prepHint = document.createElement("p");
+    prepHint.className = "prep-nav-hint";
+    prepHint.textContent =
+      "Izaberi broj ispod — zadaci se otvaraju desno. Dugmad za proveru su na dnu vežbe (skroluj do kraja).";
+    prepDetails.appendChild(prepHint);
+
+    const prepUl = document.createElement("ul");
+    prepUl.className = "prep-nav-list";
+    prepTests.forEach((pt) => {
+      const li = document.createElement("li");
+      li.className = "prep-nav-item";
+      const pb = document.createElement("button");
+      pb.type = "button";
+      pb.className = "prep-variant-btn";
+      pb.textContent = String(pt.variant);
+      pb.setAttribute("aria-label", `Priprema, set ${pt.variant}`);
+      pb.title = pt.scope_sr || "";
+      pb.addEventListener("click", () => {
+        clearNavActives();
+        pb.classList.add("active");
+        renderPrepPractice(pt);
+        if (window.matchMedia("(max-width: 900px)").matches) {
+          root.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          root.scrollTo({ top: 0 });
+        }
+      });
+      li.appendChild(pb);
+      prepUl.appendChild(li);
+    });
+    prepDetails.appendChild(prepUl);
+    nav.appendChild(prepDetails);
+  }
 
   const firstBtn = nav.querySelector("button");
   if (firstBtn) {
