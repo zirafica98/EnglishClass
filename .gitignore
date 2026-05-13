@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .vercel/
+.vercel
+.env
+.env*.local
+.ocr-temp/

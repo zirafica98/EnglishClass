@@ -2,7 +2,19 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/quest-speek", "destination": "/quest-speek.html" },
+    { "source": "/quest-image", "destination": "/quest-image.html" }
+  ],
   "headers": [
+    {
+      "source": "/quest-image/(.*).heic",
+      "headers": [{ "key": "Content-Type", "value": "image/heic" }]
+    },
+    {
+      "source": "/quest-image/(.*).HEIC",
+      "headers": [{ "key": "Content-Type", "value": "image/heic" }]
+    },
     {
       "source": "/data/(.*)",
       "headers": [

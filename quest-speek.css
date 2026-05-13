@@ -1,0 +1,484 @@
+/* Quest Speek — A2 speaking drill (standalone) */
+:root {
+  --paper: #f0f4f8;
+  --ink: #12202a;
+  --muted: #4a5f6d;
+  --accent: #0d6e7a;
+  --accent2: #c45c26;
+  --card: #fff;
+  --border: #c8d4dc;
+  --ok: #1a6b3c;
+  font-size: clamp(15px, 1vw + 14px, 17px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  background: linear-gradient(165deg, #e3eef2 0%, var(--paper) 45%, #dce8ee 100%);
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 99;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+}
+
+.qs-wrap {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+.qs-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.qs-top h1 {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  margin: 0 0 0.35rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.qs-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.qs-back {
+  align-self: center;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.qs-back:hover {
+  text-decoration: underline;
+}
+
+.qs-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  align-self: center;
+}
+
+.qs-method {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 28px rgba(18, 32, 42, 0.06);
+}
+
+.qs-method h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.qs-method p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.qs-toc {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 2rem;
+}
+
+.qs-toc h2 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.qs-toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.qs-toc a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.qs-toc a:hover {
+  text-decoration: underline;
+}
+
+.qs-section {
+  margin-bottom: 2.25rem;
+  scroll-margin-top: 1rem;
+}
+
+.qs-section h2 {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.35rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--accent);
+  color: var(--ink);
+}
+
+.qs-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 4px 16px rgba(18, 32, 42, 0.04);
+}
+
+.qs-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.qs-num {
+  display: inline-block;
+  min-width: 1.75rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.qs-write label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0.65rem 0 0.25rem;
+}
+
+.qs-write textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+  background: #fafcfd;
+}
+
+.qs-write textarea:focus {
+  outline: 2px solid rgba(13, 110, 122, 0.35);
+  outline-offset: 1px;
+}
+
+.qs-details {
+  margin-top: 0.65rem;
+  border-top: 1px dashed var(--border);
+  padding-top: 0.65rem;
+}
+
+.qs-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+.qs-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.qs-tip {
+  margin: 0.75rem 0 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.qs-phrases {
+  margin: 0.65rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.qs-model {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  background: rgba(13, 110, 122, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  font-size: 0.92rem;
+}
+
+.qs-model strong {
+  color: var(--ok);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.qs-foot {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.qs-foot code {
+  font-size: 0.85em;
+  background: rgba(18, 32, 42, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.qs-check-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.6rem;
+}
+
+.qs-check-btn {
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  background: var(--accent);
+  color: #fff;
+}
+
+.qs-check-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.qs-check-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.qs-check-status {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.qs-check-out {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fafcfd;
+  font-size: 0.9rem;
+}
+
+.qs-check-out--warn {
+  border-color: rgba(196, 92, 38, 0.45);
+  background: rgba(196, 92, 38, 0.08);
+}
+
+.qs-gram-lead {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.qs-gram-summary {
+  margin: 0;
+}
+
+.qs-gram-summary--ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.qs-gram-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink);
+}
+
+.qs-gram-list li {
+  margin-bottom: 0.65rem;
+}
+
+.qs-gram-msg {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.qs-gram-snip {
+  display: block;
+  font-size: 0.82rem;
+  margin: 0.2rem 0;
+  padding: 0.25rem 0.4rem;
+  background: rgba(18, 32, 42, 0.06);
+  border-radius: 4px;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.qs-gram-rep {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.qs-ai-box {
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  background: rgba(13, 110, 122, 0.07);
+}
+
+.qs-ai-box p {
+  margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+}
+
+.qs-ai-box strong {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.qs-ai-box--muted {
+  border-left-color: var(--muted);
+  background: rgba(74, 95, 109, 0.1);
+}
+
+.qs-ai-box--ok {
+  border-left-color: var(--ok);
+  background: rgba(26, 107, 60, 0.1);
+}
+
+.qs-ai-box--weak {
+  border-left-color: #b8860b;
+  background: rgba(184, 134, 11, 0.12);
+}
+
+.qs-ai-box--warn {
+  border-left-color: var(--accent2);
+  background: rgba(196, 92, 38, 0.12);
+}
+
+.qs-ai-box code {
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+.qs-ai-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.qs-ai-head strong {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.qs-ai-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.qs-ai-badge--ok {
+  background: rgba(26, 107, 60, 0.2);
+  color: #14532d;
+  border-color: rgba(26, 107, 60, 0.35);
+}
+
+.qs-ai-badge--weak {
+  background: rgba(184, 134, 11, 0.25);
+  color: #5c4509;
+  border-color: rgba(184, 134, 11, 0.4);
+}
+
+.qs-ai-badge--empty {
+  background: rgba(196, 92, 38, 0.2);
+  color: #7a3410;
+  border-color: rgba(196, 92, 38, 0.35);
+}
+
+.qs-ai-lead {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.qs-ai-struct {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.qs-ai-part {
+  padding: 0.5rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.qs-ai-part--en {
+  background: rgba(13, 110, 122, 0.09);
+  border-left: 2px solid var(--accent);
+}
+
+.qs-ai-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.qs-ai-box .qs-ai-struct p {
+  margin: 0;
+}

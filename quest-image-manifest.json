@@ -1,0 +1,14 @@
+{
+  "pages": [
+    { "file": "IMG_3104.jpg", "from": 1, "to": 4 },
+    { "file": "IMG_3105.jpg", "from": 5, "to": 8 },
+    { "file": "IMG_3106.jpg", "from": 9, "to": 12 },
+    { "file": "IMG_3107.jpg", "from": 13, "to": 15 },
+    { "file": "IMG_3108.jpg", "from": 16, "to": 18 },
+    { "file": "IMG_3109.jpg", "from": 19, "to": 21 },
+    { "file": "IMG_3110.jpg", "from": 22, "to": 24 },
+    { "file": "IMG_3111.jpg", "from": 25, "to": 28 },
+    { "file": "IMG_3112.jpg", "from": 29, "to": 32 },
+    { "file": "IMG_3113.jpg", "from": 33, "to": 34 }
+  ]
+}

@@ -1,0 +1,197 @@
+/* Quest image — nadovezuje se na styles.css (face2face tema) */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.qi-page {
+  min-height: 100vh;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.qi-wrap {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: clamp(0.85rem, 3vw, 2rem);
+}
+
+.qi-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(244, 241, 234, 0.94);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 0 1rem;
+  margin: 0 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 24px rgba(26, 23, 20, 0.04);
+}
+
+.qi-title {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  margin: 0 0 0.65rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.qi-search {
+  width: 100%;
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+}
+
+.qi-search:focus {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+  border-color: rgba(139, 41, 66, 0.35);
+}
+
+.qi-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.65rem;
+}
+
+.qi-chip {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--muted);
+  cursor: pointer;
+  max-width: 100%;
+  line-height: 1.2;
+}
+
+.qi-chip:hover {
+  border-color: rgba(139, 41, 66, 0.28);
+  color: var(--ink);
+}
+
+.qi-chip--active {
+  border-color: rgba(139, 41, 66, 0.45);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.qi-chip--all.qi-chip--active {
+  color: var(--accent);
+}
+
+.qi-empty {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.qi-clear-filters {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.qi-clear-filters:hover {
+  text-decoration: none;
+}
+
+.qi-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 0.85rem;
+  box-shadow: var(--shadow);
+}
+
+.qi-card[hidden] {
+  display: none !important;
+}
+
+.qi-q {
+  margin: 0 0 0.55rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.qi-num {
+  color: var(--accent);
+  margin-right: 0.3rem;
+  font-weight: 700;
+}
+
+.qi-answer {
+  margin: 0;
+  font-size: 0.96rem;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.qi-hint {
+  margin: 0.65rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.qi-hint strong {
+  color: var(--ink);
+}
+
+.qi-err {
+  padding: 2rem clamp(1rem, 4vw, 2rem);
+  max-width: 40rem;
+  margin: 0 auto;
+  color: var(--accent);
+  line-height: 1.5;
+}
+
+.qi-err-msg {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
