@@ -241,15 +241,19 @@
     if (!root) return;
 
     let data;
-    try {
-      const r = await fetch("./quest-image-data.json", { cache: "no-store" });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      data = await r.json();
-    } catch (e) {
-      root.innerHTML = `<p class="qi-err">Ne mogu da učitam <code>quest-image-data.json</code>. Koristi server (npr. <code>vercel dev</code>). <span class="qi-err-msg">${escapeHtml(
-        String(e && e.message ? e.message : e)
-      )}</span></p>`;
-      return;
+    if (Array.isArray(window.__QUEST_IMAGE_DATA__)) {
+      data = window.__QUEST_IMAGE_DATA__;
+    } else {
+      try {
+        const r = await fetch("./quest-image-data.json", { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        data = await r.json();
+      } catch (e) {
+        root.innerHTML = `<p class="qi-err">Ne mogu da učitam <code>quest-image-data.json</code>. Učitaj sa servera (npr. <code>vercel dev</code>) ili otvori preko <code>file://</code> — tada radi iz <code>quest-image-data.js</code> koji je već uključen. <span class="qi-err-msg">${escapeHtml(
+          String(e && e.message ? e.message : e)
+        )}</span></p>`;
+        return;
+      }
     }
 
     if (!Array.isArray(data)) {

@@ -110,9 +110,40 @@
   const navItems = [];
 
   const titleEl = document.getElementById("course-title");
-  const notesEl = document.getElementById("course-notes");
   if (titleEl) titleEl.textContent = "Lekcije 1A – 12C";
-  if (notesEl) notesEl.textContent = data.course.notes_sr;
+
+  /* ---------- brand info tooltip ---------- */
+  const infoBtn = document.querySelector(".brand-info-btn");
+  if (infoBtn && data.course) {
+    const infoTip = document.createElement("div");
+    infoTip.className = "brand-info-tip";
+    infoTip.setAttribute("role", "tooltip");
+    infoTip.textContent = data.course.notes_sr;
+    infoTip.hidden = true;
+    document.body.appendChild(infoTip);
+    function showTip() {
+      const rect = infoBtn.getBoundingClientRect();
+      infoTip.style.position = "fixed";
+      infoTip.style.top = (rect.bottom + 6) + "px";
+      infoTip.style.left = Math.max(6, Math.min(rect.left, window.innerWidth - 270)) + "px";
+      infoTip.hidden = false;
+    }
+    infoBtn.addEventListener("mouseenter", showTip);
+    infoBtn.addEventListener("mouseleave", () => {
+      infoTip.hidden = true;
+      infoBtn.setAttribute("aria-expanded", "false");
+    });
+    infoTip.addEventListener("mouseenter", () => {
+      infoTip.hidden = false;
+    });
+    infoTip.addEventListener("mouseleave", () => {
+      infoTip.hidden = true;
+      infoBtn.setAttribute("aria-expanded", "false");
+    });
+    window.addEventListener("resize", () => {
+      if (!infoTip.hidden) showTip();
+    });
+  }
 
   const byUnit = new Map();
   data.lessons.forEach((lesson) => {

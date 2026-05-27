@@ -509,8 +509,7 @@
       na ispitu ne učiš napamet ceo tekst, već <strong>šablone</strong> (rutina, razlog, kontrast, savet sa should/shouldn’t).
     </p>
     <p>
-      Dugme <strong>„Proveri odgovor“</strong> šalje tekst na server: prvo <strong>LanguageTool</strong> (automatska gramatika/stil na engleskom, bez naloga).
-      Opciono: <strong>Claude</strong> — stavi <code>ANTHROPIC_API_KEY</code> (i po želji <code>ANTHROPIC_MODEL</code>) u Vercel env ili u <code>site/.env.local</code>, pa <code>npx vercel dev</code> iz <code>site</code>. AI tada vidi i LanguageTool napomene i vraća strukturisan savet. Ako nema Anthropic ključa, koristi se <code>OPENAI_API_KEY</code> ako postoji (<code>OPENAI_MODEL</code> podrazumevano <code>gpt-4o-mini</code>).
+
     </p>
   `;
 
@@ -636,10 +635,7 @@
           <h1>Speaking questions · A2 final</h1>
           <p class="qs-sub">SPEAKING QUESTIONS A2 – FINAL EXAMINATION</p>
         </div>
-        <nav class="qs-links" aria-label="Linkovi">
-          <a class="qs-back" href="./quest-image">Slika + odgovor</a>
-          <a class="qs-back" href="./">← face2face lekcije</a>
-        </nav>
+
       </header>
 
       <section class="qs-method" aria-labelledby="method-h">
