@@ -5,8 +5,8 @@
   "description": "Digitalna pomoć za face2face Elementary (2nd ed.) — lekcije, testovi, govorne vežbe",
   "scripts": {
     "dev": "vercel dev",
-    "build": "vercel build",
-    "start": "vercel start"
+    "build": "",
+    "start": ""
   },
   "engines": {
     "node": ">=18"
