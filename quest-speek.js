@@ -514,11 +514,11 @@
     </p>
   `;
 
-  function escapeHtml(s) {
+  const escapeHtml = window.escapeHtml || function(s) {
     return String(s).replace(/[&<>'"]/g, (ch) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
     );
-  }
+  };
 
   function aiGradeBoxClass(hint) {
     const h = String(hint || "ok").toLowerCase();

@@ -3,11 +3,11 @@
 
   const root = document.getElementById("qi-root");
 
-  function escapeHtml(s) {
+  const escapeHtml = window.escapeHtml || function(s) {
     return String(s).replace(/[&<>'"]/g, (ch) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
     );
-  }
+  };
 
   function norm(s) {
     return String(s)

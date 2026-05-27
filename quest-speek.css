@@ -11,6 +11,52 @@
   font-size: clamp(15px, 1vw + 14px, 17px);
 }
 
+html[data-theme="dark"] {
+  --paper: #12181c;
+  --ink: #c8d0d6;
+  --muted: #6a7a84;
+  --accent: #3a9aaa;
+  --accent2: #d07a3a;
+  --card: #1a2228;
+  --border: #2a343c;
+  --ok: #2a8a5a;
+}
+
+html[data-theme="dark"] body {
+  background: linear-gradient(165deg, #141a1e 0%, var(--paper) 45%, #12181c 100%);
+}
+
+html[data-theme="dark"] .qs-card,
+html[data-theme="dark"] .qs-method,
+html[data-theme="dark"] .qs-toc {
+  background: var(--card);
+}
+
+html[data-theme="dark"] .qs-write textarea {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .qs-check-out {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .qs-foot code {
+  background: rgba(200, 208, 214, 0.1);
+}
+
+html[data-theme="dark"] .qs-gram-snip {
+  background: rgba(200, 208, 214, 0.08);
+}
+
+html[data-theme="dark"] .qs-ai-part {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .qs-ai-box code {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 *,
 *::before,
 *::after {

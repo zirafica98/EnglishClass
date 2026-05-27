@@ -16,11 +16,21 @@
     <a class="skip" href="#main">Preskoči na sadržaj</a>
     <div class="layout">
       <aside class="nav-pane" aria-label="Lista lekcija">
+        <button type="button" class="nav-toggle" aria-label="Otvorí/zatvorí listu lekcija" aria-expanded="true">
+          <span class="nav-toggle-icon"></span>
+        </button>
         <div class="brand">
-          <p class="eyebrow">face2face</p>
+          <p class="eyebrow">face2face
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Dark mode">☾</button>
+          </p>
           <h1 id="course-title" class="brand-title">Elementary</h1>
           <p id="course-notes" class="brand-notes muted"></p>
         </div>
+        <nav class="app-nav" aria-label="Aplikacije">
+          <a href="./index.html" class="app-nav-link active" data-short="L">Lekcije</a>
+          <a href="./quest-speek.html" class="app-nav-link" data-short="G">Govor</a>
+          <a href="./quest-image.html" class="app-nav-link" data-short="S">Slike</a>
+        </nav>
         <div class="nav-head">
           <span class="label">Lekcije 1A – 12C</span>
         </div>
@@ -30,6 +40,7 @@
         <article id="lesson-view" aria-live="polite"></article>
       </main>
     </div>
+    <script src="./util.js"></script>
     <script src="./data/lessons.embed.js"></script>
     <script src="./app.js" defer></script>
   </body>

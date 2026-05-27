@@ -12,10 +12,102 @@
     }
   }
 
-  if (!data || !root || !nav) {
+  if (!data || !nav) {
     console.error("Nedostaju podaci ili markup.");
     return;
   }
+
+  /* ---------- theme toggle ---------- */
+  const THEME_KEY = "f2f_theme";
+  const htmlEl = document.documentElement;
+  function applyTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch {}
+    const btn = document.getElementById("theme-toggle");
+    if (btn) btn.textContent = theme === "dark" ? "☀" : "☾";
+    if (btn) btn.setAttribute("aria-label", theme === "dark" ? "Light mode" : "Dark mode");
+  }
+  function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "dark" || saved === "light") {
+      applyTheme(saved);
+      return;
+    }
+    applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+  initTheme();
+  const themeBtn = document.getElementById("theme-toggle");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      const next = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+  }
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    if (!localStorage.getItem(THEME_KEY)) {
+      applyTheme(e.matches ? "dark" : "light");
+    }
+  });
+
+  /* ---------- nav toggle (mobile) ---------- */
+  const navToggle = document.querySelector(".nav-toggle");
+  const navBackdrop = document.createElement("div");
+  navBackdrop.className = "nav-backdrop";
+  document.querySelector(".layout").appendChild(navBackdrop);
+  function hideNavOnMobile() {
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      navPane.classList.add("collapsed");
+      navBackdrop.classList.remove("visible");
+      if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+    }
+  }
+  function updateNavBackdrop() {
+    const isMobile = window.matchMedia("(max-width: 900px)").matches;
+    navBackdrop.classList.toggle("visible", isMobile && !navPane.classList.contains("collapsed"));
+  }
+  if (navToggle) {
+    navToggle.addEventListener("click", () => {
+      navPane.classList.toggle("collapsed");
+      const collapsed = navPane.classList.contains("collapsed");
+      if (window.matchMedia("(min-width: 901px)").matches) {
+        document.querySelector(".layout").classList.toggle("nav-collapsed");
+        document.querySelectorAll("#lesson-nav details, .prep-nav-details").forEach((d) => {
+          if (collapsed) {
+            d.dataset.op = d.open ? "1" : "0";
+            d.open = true;
+          } else {
+            d.open = d.dataset.op !== "0";
+          }
+        });
+      }
+      updateNavBackdrop();
+      const expanded = !collapsed;
+      navToggle.setAttribute("aria-expanded", String(expanded));
+    });
+    navBackdrop.addEventListener("click", () => {
+      navPane.classList.add("collapsed");
+      updateNavBackdrop();
+      if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  /* start collapsed on mobile */
+  hideNavOnMobile();
+
+  /* ---------- prep local storage ---------- */
+  const PREP_LS_KEY = "f2f_prep_values";
+  function loadPrepLS() {
+    try { return JSON.parse(localStorage.getItem(PREP_LS_KEY)) || {}; } catch { return {}; }
+  }
+  function savePrepLS() {
+    try { localStorage.setItem(PREP_LS_KEY, JSON.stringify(savedPrepValues)); } catch {}
+  }
+
+  let activePrepVariant = null;
+  const savedPrepValues = loadPrepLS();
+
+  /* ---------- keyboard navigation ---------- */
+  const navItems = [];
 
   const titleEl = document.getElementById("course-title");
   const notesEl = document.getElementById("course-notes");
@@ -31,16 +123,26 @@
 
   const orderedKeys = Array.from(byUnit.keys()).sort((a, b) => Number(a) - Number(b));
 
-  function escapeHtml(s) {
+  const escapeHtml = window.escapeHtml || function(s) {
     return String(s).replace(/[&<>'"]/g, (ch) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
     );
-  }
+  };
 
   const testsByUnit = new Map();
   (data.unit_tests || []).forEach((t) => testsByUnit.set(t.unit, t));
 
+  function savePrepIfActive() {
+    if (activePrepVariant === null) return;
+    const vals = {};
+    root.querySelectorAll(".prep-input, .prep-area").forEach((inp) => {
+      vals[`${inp.dataset.sec}-${inp.dataset.row}-${inp.dataset.part || ""}`] = inp.value;
+    });
+    savedPrepValues[activePrepVariant] = vals;
+  }
+
   function renderTest(test) {
+    savePrepIfActive();
     const introCount = test.questions.length;
     const items = test.questions
       .map((qq, idx) => {
@@ -339,6 +441,9 @@
   }
 
   function renderPrepPractice(pt) {
+    savePrepIfActive();
+    activePrepVariant = pt.variant;
+
     const answersBySec = new Map();
     (pt.answer_key || []).forEach((block) => {
       answersBySec.set(block.n, block.items || []);
@@ -425,6 +530,12 @@
         if (skip) parts.push(`bez ključa: ${skip}`);
         summaryEl.textContent = parts.join(" · ");
       }
+      const firstBad = root.querySelector(".prep-row-bad, .prep-row-warn");
+      if (firstBad) {
+        firstBad.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      savePrepIfActive();
+      savePrepLS();
     };
 
     root.querySelectorAll(".prep-action-check").forEach((btn) => {
@@ -447,6 +558,7 @@
         root.querySelectorAll(".prep-input, .prep-area").forEach((el) => {
           el.value = "";
         });
+        if (activePrepVariant !== null) delete savedPrepValues[activePrepVariant];
         if (summaryEl) summaryEl.textContent = "";
         if (hintsOn) {
           hintsOn = false;
@@ -457,6 +569,14 @@
         }
       });
     });
+
+    if (savedPrepValues[pt.variant]) {
+      const vals = savedPrepValues[pt.variant];
+      root.querySelectorAll(".prep-input, .prep-area").forEach((inp) => {
+        const k = `${inp.dataset.sec}-${inp.dataset.row}-${inp.dataset.part || ""}`;
+        if (vals[k] !== undefined) inp.value = vals[k];
+      });
+    }
   }
 
   function renderPairTable(pairs, opts) {
@@ -486,6 +606,7 @@
   }
 
   function renderLesson(lesson) {
+    savePrepIfActive();
     const ep = lesson.extra_practice || {};
 
     const tocRows = [
@@ -587,15 +708,6 @@
     `;
   }
 
-  root.addEventListener("input", (e) => {
-    const t = e.target;
-    if (!t.matches(".prep-input, .prep-area")) return;
-    const row = t.closest(".prep-row");
-    if (row) prepClearRowMarks(row);
-    const sum = document.getElementById("prep-check-summary");
-    if (sum) sum.textContent = "";
-  });
-
   orderedKeys.forEach((key, idx) => {
     const lessons = byUnit.get(key);
     const details = document.createElement("details");
@@ -621,9 +733,11 @@
       btn.title = lesson.title_en;
       btn.dataset.id = lesson.id;
       btn.addEventListener("click", () => {
+        if (!root) { window.location.href = "./"; return; }
         clearNavActives();
         btn.classList.add("active");
         renderLesson(lesson);
+        hideNavOnMobile();
         if (window.matchMedia("(max-width: 900px)").matches) {
           root.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {
@@ -636,6 +750,7 @@
       cap.className = "lesson-title-hint";
       cap.textContent = lesson.title_en;
       li.append(cap);
+      navItems.push({ type: "lesson", btn, lesson });
 
       ul.append(li);
     });
@@ -647,13 +762,17 @@
       const tbtn = document.createElement("button");
       tbtn.type = "button";
       tbtn.className = "test-btn";
-      tbtn.textContent = `📝 Test · 10 pitanja`;
+      const tspan = document.createElement("span");
+      tspan.textContent = `📝 Test · 10 pitanja`;
+      tbtn.appendChild(tspan);
       tbtn.title = `Test posle Jedinice ${key}`;
       tbtn.dataset.testUnit = String(test.unit);
       tbtn.addEventListener("click", () => {
+        if (!root) { window.location.href = "./"; return; }
         clearNavActives();
         tbtn.classList.add("active");
         renderTest(test);
+        hideNavOnMobile();
         if (window.matchMedia("(max-width: 900px)").matches) {
           root.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {
@@ -662,6 +781,7 @@
       });
       li.append(tbtn);
       ul.append(li);
+      navItems.push({ type: "test", btn: tbtn, unit: test.unit });
     }
 
     details.append(ul);
@@ -699,15 +819,18 @@
       pb.setAttribute("aria-label", `Priprema, set ${pt.variant}`);
       pb.title = pt.scope_sr || "";
       pb.addEventListener("click", () => {
+        if (!root) { window.location.href = "./"; return; }
         clearNavActives();
         pb.classList.add("active");
         renderPrepPractice(pt);
+        hideNavOnMobile();
         if (window.matchMedia("(max-width: 900px)").matches) {
           root.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {
           root.scrollTo({ top: 0 });
         }
       });
+      navItems.push({ type: "prep", btn: pb, pt });
       li.appendChild(pb);
       prepUl.appendChild(li);
     });
@@ -715,6 +838,68 @@
     nav.appendChild(prepDetails);
   }
 
+  if (!root) return;
+
+  root.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!t.matches(".prep-input, .prep-area")) return;
+    const row = t.closest(".prep-row");
+    if (row) prepClearRowMarks(row);
+    const sum = document.getElementById("prep-check-summary");
+    if (sum) sum.textContent = "";
+    savePrepIfActive();
+    savePrepLS();
+  });
+
+  /* ---------- keyboard navigation ---------- */
+  let currentNavIdx = -1;
+  function setCurrentNavIdx(idx) {
+    if (idx < 0) idx = 0;
+    if (idx >= navItems.length) idx = navItems.length - 1;
+    currentNavIdx = idx;
+  }
+  function getCurrentNavIdx() {
+    if (currentNavIdx >= 0) return currentNavIdx;
+    const active = navPane.querySelector("button.active");
+    if (active) {
+      return navItems.findIndex((item) => item.btn === active);
+    }
+    return 0;
+  }
+  function activateNavItem(item) {
+    if (!root) { window.location.href = "./"; return; }
+    clearNavActives();
+    item.btn.classList.add("active");
+    if (item.type === "lesson") {
+      renderLesson(item.lesson);
+    } else if (item.type === "test") {
+      const test = testsByUnit.get(Number(item.unit));
+      if (test) renderTest(test);
+    } else if (item.type === "prep") {
+      renderPrepPractice(item.pt);
+    }
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      root.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      root.scrollTo({ top: 0 });
+    }
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    if (e.target.closest("input, textarea, select, [contenteditable]")) return;
+    const idx = getCurrentNavIdx();
+    if (idx < 0) return;
+    let next = idx;
+    if (e.key === "ArrowLeft") next = idx - 1;
+    if (e.key === "ArrowRight") next = idx + 1;
+    if (next < 0 || next >= navItems.length) return;
+    e.preventDefault();
+    setCurrentNavIdx(next);
+    activateNavItem(navItems[next]);
+  });
+
+  /* ---------- initial render ---------- */
   const firstBtn = nav.querySelector("button");
   if (firstBtn) {
     firstBtn.classList.add("active");

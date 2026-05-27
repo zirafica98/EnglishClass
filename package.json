@@ -1,0 +1,14 @@
+{
+  "name": "face2face-elementary-helper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digitalna pomoć za face2face Elementary (2nd ed.) — lekcije, testovi, govorne vežbe",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "start": "vercel start"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
