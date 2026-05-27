@@ -263,6 +263,7 @@ body {
 }
 
 .layout {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(260px, 300px) 1fr;
   grid-template-areas: "nav content";
@@ -276,6 +277,7 @@ body {
     grid-template-areas:
       "nav"
       "content";
+    overflow-x: hidden;
   }
 }
 
@@ -499,12 +501,12 @@ html[data-theme="dark"] .theme-toggle:hover {
 /* mobile collapse — slide-in drawer */
 @media (max-width: 900px) {
   .nav-pane {
-    position: fixed;
+    position: absolute;
     left: -280px;
     top: 0;
     width: 280px;
     max-width: 80vw;
-    height: 100vh;
+    height: 100dvh;
     z-index: 100;
     transition: left 0.3s ease;
     border-right: 1px solid var(--border);
