@@ -52,7 +52,7 @@
   function render(data, opts) {
     opts = opts || {};
     if (!root || !Array.isArray(data) || !data.length) {
-      if (root) root.innerHTML = "<p>Niz u <code>quest-image-data.json</code> je prazan.</p>";
+      if (root) root.innerHTML = "<p>Nema podataka za prikaz.</p>";
       return;
     }
 
@@ -237,27 +237,12 @@
     }
   }
 
-  async function main() {
+  function main() {
     if (!root) return;
 
-    let data;
-    if (Array.isArray(window.__QUEST_IMAGE_DATA__)) {
-      data = window.__QUEST_IMAGE_DATA__;
-    } else {
-      try {
-        const r = await fetch("./quest-image-data.json", { cache: "no-store" });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        data = await r.json();
-      } catch (e) {
-        root.innerHTML = `<p class="qi-err">Ne mogu da učitam <code>quest-image-data.json</code>. Učitaj sa servera (npr. <code>vercel dev</code>) ili otvori preko <code>file://</code> — tada radi iz <code>quest-image-data.js</code> koji je već uključen. <span class="qi-err-msg">${escapeHtml(
-          String(e && e.message ? e.message : e)
-        )}</span></p>`;
-        return;
-      }
-    }
-
+    const data = window.__QUEST_IMAGE_DATA__;
     if (!Array.isArray(data)) {
-      root.innerHTML = '<p class="qi-err">quest-image-data.json mora biti JSON niz.</p>';
+      root.innerHTML = '<p class="qi-err">Nedostaju podaci. Proveri da li je <code>quest-image-data.js</code> uključen u HTML.</p>';
       return;
     }
 

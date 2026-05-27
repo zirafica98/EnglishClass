@@ -666,6 +666,8 @@
             <p class="block-sub">Glavne reči i izrazi koje treba znati napamet — uz srpski prevod.</p>
           </header>
           ${renderPairTable(vocab, { headEn: "Engleski", headSr: "Srpski" })}
+          <button type="button" class="vocab-quiz-start">🎯 Vežbaj rečnik</button>
+          <div class="vocab-quiz" id="vocab-quiz" style="display:none"></div>
         </section>
       `
       : "";
@@ -736,7 +738,118 @@
           <pre class="ocr">${epText || "(nije pronađen blok za ovu podlekciju u OCR izlazu)"}</pre>
         </details>
       </section>
+      <button type="button" class="scroll-top-btn" aria-label="Skrol na vrh">↑</button>
     `;
+    const stb = root.querySelector(".scroll-top-btn");
+    if (stb) stb.addEventListener("click", () => root.firstElementChild?.scrollIntoView({ behavior: "smooth" }));
+
+    const startBtn = root.querySelector(".vocab-quiz-start");
+    const quizEl = root.querySelector("#vocab-quiz");
+    if (startBtn && quizEl && vocab.length) {
+      startBtn.addEventListener("click", () => startVocabQuiz(vocab, quizEl, startBtn));
+    }
+  }
+
+  function startVocabQuiz(vocab, quizEl, startBtn) {
+    startBtn.style.display = "none";
+
+    function buildPool() {
+      const pool = [];
+      for (const l of data.lessons) {
+        if (l.vocab) {
+          for (const v of l.vocab) {
+            if (v.en && v.sr) pool.push({ en: v.en, sr: v.sr });
+          }
+        }
+      }
+      return pool;
+    }
+
+    const allPool = buildPool();
+    const items = shuffle(vocab).map((v) => ({ en: v.en, sr: v.sr }));
+    let idx = 0;
+    let score = 0;
+    let answered = false;
+
+    function showItem() {
+      if (idx >= items.length) {
+        showDone();
+        return;
+      }
+      answered = false;
+      const item = items[idx];
+      const enToSr = Math.random() < 0.5;
+      const question = enToSr ? item.en : item.sr;
+      const correctAnswer = enToSr ? item.sr : item.en;
+      const direction = enToSr ? "engleski → srpski" : "srpski → engleski";
+
+      let wrongPool = allPool.filter((p) => p.en !== item.en);
+      if (wrongPool.length < 3) {
+        wrongPool = allPool.filter((p) => p.sr !== item.sr);
+      }
+      const wrongOptions = shuffle(wrongPool).slice(0, 3).map((p) => enToSr ? p.sr : p.en);
+      const options = shuffle([correctAnswer, ...wrongOptions]);
+
+      quizEl.style.display = "block";
+      quizEl.innerHTML = `
+        <div class="vocab-quiz-header">
+          <h4>Vežbaj rečnik</h4>
+          <span class="vocab-quiz-score">${score}/${idx}</span>
+        </div>
+        <p class="vocab-quiz-direction">${direction}</p>
+        <p class="vocab-quiz-word">${escapeHtml(question)}</p>
+        <div class="vocab-quiz-opts">
+          ${options.map((opt) => `<button type="button">${escapeHtml(opt)}</button>`).join("")}
+        </div>
+        <p class="vocab-quiz-feedback"></p>
+      `;
+
+      const optBtns = quizEl.querySelectorAll(".vocab-quiz-opts button");
+      const feedback = quizEl.querySelector(".vocab-quiz-feedback");
+
+      optBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (answered) return;
+          answered = true;
+          const isCorrect = btn.textContent === correctAnswer;
+          if (isCorrect) score++;
+          optBtns.forEach((b) => b.disabled = true);
+          optBtns.forEach((b) => {
+            if (b.textContent === correctAnswer) b.classList.add("correct");
+            else if (b === btn) b.classList.add("wrong");
+          });
+          feedback.textContent = isCorrect ? "✅ Tačno!" : `❌ Netočno. Tačan odgovor: ${escapeHtml(correctAnswer)}`;
+
+          const scoreEl = quizEl.querySelector(".vocab-quiz-score");
+          if (scoreEl) scoreEl.textContent = `${score}/${idx + 1}`;
+
+          setTimeout(() => {
+            idx++;
+            showItem();
+          }, 1200);
+        });
+      });
+    }
+
+    function showDone() {
+      const pct = Math.round((score / items.length) * 100);
+      quizEl.innerHTML = `
+        <div class="vocab-quiz-done">
+          <p>Kviz završen!</p>
+          <p class="score-frac">${score}/${items.length}</p>
+          <p>${pct === 100 ? "Savršeno! 🎉" : pct >= 80 ? "Odlično! 👏" : pct >= 60 ? "Dobro 👍" : "Vežbaj još 💪"}</p>
+          <button type="button" class="vocab-quiz-reset">Pokušaj ponovo</button>
+        </div>
+      `;
+      const resetBtn = quizEl.querySelector(".vocab-quiz-reset");
+      resetBtn.addEventListener("click", () => {
+        idx = 0;
+        score = 0;
+        showItem();
+      });
+    }
+
+    showItem();
   }
 
   orderedKeys.forEach((key, idx) => {
@@ -764,7 +877,10 @@
       btn.title = lesson.title_en;
       btn.dataset.id = lesson.id;
       btn.addEventListener("click", () => {
-        if (!root) { window.location.href = "./"; return; }
+        if (!root) {
+          window.location.href = "./index.html?lesson=" + encodeURIComponent(lesson.id);
+          return;
+        }
         clearNavActives();
         btn.classList.add("active");
         renderLesson(lesson);
@@ -799,7 +915,7 @@
       tbtn.title = `Test posle Jedinice ${key}`;
       tbtn.dataset.testUnit = String(test.unit);
       tbtn.addEventListener("click", () => {
-        if (!root) { window.location.href = "./"; return; }
+        if (!root) { window.location.href = "./index.html?test=" + test.unit; return; }
         clearNavActives();
         tbtn.classList.add("active");
         renderTest(test);
@@ -850,7 +966,7 @@
       pb.setAttribute("aria-label", `Priprema, set ${pt.variant}`);
       pb.title = pt.scope_sr || "";
       pb.addEventListener("click", () => {
-        if (!root) { window.location.href = "./"; return; }
+        if (!root) { window.location.href = "./index.html?prep=" + pt.variant; return; }
         clearNavActives();
         pb.classList.add("active");
         renderPrepPractice(pt);
@@ -867,6 +983,187 @@
     });
     prepDetails.appendChild(prepUl);
     nav.appendChild(prepDetails);
+  }
+
+  /* ---------- vocabulary quiz sets ---------- */
+  const vocabSets = [];
+  const unitGroups = [
+    [1, "1A–1D"],
+    [2, "2A–2D"],
+    [3, "3A–3D"],
+    [4, "4A–4D"],
+    [5, "5A–5D"],
+    [6, "6A–6D"],
+    [7, "7A–7D"],
+    [8, "8A–8D"],
+    [9, 10, "9A–10D"],
+    [11, 12, "11A–12C"],
+  ];
+  unitGroups.forEach((g) => {
+    const label = g.pop();
+    const units = g;
+    const items = [];
+    units.forEach((u) => {
+      const lessons = byUnit.get(String(u)) || [];
+      lessons.forEach((l) => {
+        if (l.vocab) {
+          l.vocab.forEach((v) => {
+            if (v.en && v.sr) items.push({ en: v.en, sr: v.sr });
+          });
+        }
+      });
+    });
+    if (items.length) {
+      vocabSets.push({ variant: vocabSets.length + 1, label, items });
+    }
+  });
+
+  if (vocabSets.length && navPane) {
+    const vqDetails = document.createElement("details");
+    vqDetails.className = "prep-nav-details";
+    const vqSum = document.createElement("summary");
+    const vqTitle = document.createElement("span");
+    vqTitle.textContent = "Vežbanje · Rečnik";
+    const vqChip = document.createElement("span");
+    vqChip.className = "unit-chip";
+    vqChip.textContent = vocabSets[0].label + " – " + vocabSets[vocabSets.length - 1].label;
+    vqSum.append(vqTitle, vqChip);
+    vqDetails.appendChild(vqSum);
+
+    const vqHint = document.createElement("p");
+    vqHint.className = "prep-nav-hint";
+    vqHint.textContent = "Izaberi broj ispod — rečnik iz datih lekcija. engleski ↔ srpski.";
+    vqDetails.appendChild(vqHint);
+
+    const vqUl = document.createElement("ul");
+    vqUl.className = "prep-nav-list";
+    vocabSets.forEach((vs) => {
+      const li = document.createElement("li");
+      li.className = "prep-nav-item";
+      const vb = document.createElement("button");
+      vb.type = "button";
+      vb.className = "prep-variant-btn";
+      vb.textContent = String(vs.variant);
+      vb.setAttribute("aria-label", `Rečnik, set ${vs.variant} · ${vs.label}`);
+      vb.title = vs.label + " · " + vs.items.length + " reči";
+      vb.addEventListener("click", () => {
+        if (!root) { window.location.href = "./index.html?vquiz=" + vs.variant; return; }
+        clearNavActives();
+        vb.classList.add("active");
+        renderVocabQuiz(vs);
+        hideNavOnMobile();
+        if (window.matchMedia("(max-width: 900px)").matches) {
+          root.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          root.scrollTo({ top: 0 });
+        }
+      });
+      navItems.push({ type: "vquiz", btn: vb, variant: vs.variant });
+      li.appendChild(vb);
+      vqUl.appendChild(li);
+    });
+    vqDetails.appendChild(vqUl);
+    nav.appendChild(vqDetails);
+  }
+
+  function renderVocabQuiz(set) {
+    savePrepIfActive();
+    const items = shuffle(set.items);
+    const limit = Math.min(items.length, 15);
+    const quizItems = shuffle(items).slice(0, limit);
+    root.innerHTML = `
+      <header class="lesson-head">
+        <h2>Rečnik · Set ${set.variant}</h2>
+        <p class="lesson-code">${set.label} · ${set.items.length} reči · ${limit} pitanja</p>
+      </header>
+      <div class="vocab-quiz" id="vocab-quiz"></div>
+    `;
+    const quizEl = root.querySelector("#vocab-quiz");
+    startVocabQuizInline(quizItems, quizEl);
+  }
+
+  function startVocabQuizInline(items, quizEl) {
+    let idx = 0;
+    let score = 0;
+    let answered = false;
+
+    function buildPool() {
+      const pool = [];
+      for (const l of data.lessons) {
+        if (l.vocab) {
+          for (const v of l.vocab) {
+            if (v.en && v.sr) pool.push({ en: v.en, sr: v.sr });
+          }
+        }
+      }
+      return pool;
+    }
+    const allPool = buildPool();
+
+    function showItem() {
+      if (idx >= items.length) { showDone(); return; }
+      answered = false;
+      const item = items[idx];
+      const enToSr = Math.random() < 0.5;
+      const question = enToSr ? item.en : item.sr;
+      const correctAnswer = enToSr ? item.sr : item.en;
+      const direction = enToSr ? "engleski → srpski" : "srpski → engleski";
+
+      let wrongPool = allPool.filter((p) => p.en !== item.en);
+      if (wrongPool.length < 3) wrongPool = allPool.filter((p) => p.sr !== item.sr);
+      const wrongOptions = shuffle(wrongPool).slice(0, 3).map((p) => enToSr ? p.sr : p.en);
+      const options = shuffle([correctAnswer, ...wrongOptions]);
+
+      quizEl.innerHTML = `
+        <div class="vocab-quiz-header">
+          <h4>Vežbaj rečnik · ${idx + 1}/${items.length}</h4>
+          <span class="vocab-quiz-score">${score}/${idx}</span>
+        </div>
+        <p class="vocab-quiz-direction">${direction}</p>
+        <p class="vocab-quiz-word">${escapeHtml(question)}</p>
+        <div class="vocab-quiz-opts">
+          ${options.map((o) => `<button type="button">${escapeHtml(o)}</button>`).join("")}
+        </div>
+        <p class="vocab-quiz-feedback"></p>
+      `;
+
+      const btns = quizEl.querySelectorAll(".vocab-quiz-opts button");
+      const feedback = quizEl.querySelector(".vocab-quiz-feedback");
+      btns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (answered) return;
+          answered = true;
+          const isCorrect = btn.textContent === correctAnswer;
+          if (isCorrect) score++;
+          btns.forEach((b) => b.disabled = true);
+          btns.forEach((b) => {
+            if (b.textContent === correctAnswer) b.classList.add("correct");
+            else if (b === btn) b.classList.add("wrong");
+          });
+          feedback.textContent = isCorrect ? "✅ Tačno!" : `❌ Netočno. Tačan odgovor: ${escapeHtml(correctAnswer)}`;
+          const se = quizEl.querySelector(".vocab-quiz-score");
+          if (se) se.textContent = `${score}/${idx + 1}`;
+          setTimeout(() => { idx++; showItem(); }, 1200);
+        });
+      });
+    }
+
+    function showDone() {
+      const pct = Math.round((score / items.length) * 100);
+      quizEl.innerHTML = `
+        <div class="vocab-quiz-done">
+          <p>Kviz završen!</p>
+          <p class="score-frac">${score}/${items.length}</p>
+          <p>${pct === 100 ? "Savršeno! 🎉" : pct >= 80 ? "Odlično! 👏" : pct >= 60 ? "Dobro 👍" : "Vežbaj još 💪"}</p>
+          <button type="button" class="vocab-quiz-reset">Pokušaj ponovo</button>
+        </div>
+      `;
+      quizEl.querySelector(".vocab-quiz-reset")?.addEventListener("click", () => {
+        idx = 0; score = 0; showItem();
+      });
+    }
+
+    showItem();
   }
 
   if (!root) return;
@@ -898,7 +1195,20 @@
     return 0;
   }
   function activateNavItem(item) {
-    if (!root) { window.location.href = "./"; return; }
+    if (!root) {
+      if (item.type === "lesson") {
+        window.location.href = "./index.html?lesson=" + encodeURIComponent(item.btn.dataset.id);
+      } else if (item.type === "test") {
+        window.location.href = "./index.html?test=" + item.unit;
+      } else if (item.type === "prep") {
+        window.location.href = "./index.html?prep=" + item.pt.variant;
+      } else if (item.type === "vquiz") {
+        window.location.href = "./index.html?vquiz=" + item.variant;
+      } else {
+        window.location.href = "./index.html";
+      }
+      return;
+    }
     clearNavActives();
     item.btn.classList.add("active");
     if (item.type === "lesson") {
@@ -908,6 +1218,9 @@
       if (test) renderTest(test);
     } else if (item.type === "prep") {
       renderPrepPractice(item.pt);
+    } else if (item.type === "vquiz") {
+      const vs = vocabSets.find((s) => s.variant === item.variant);
+      if (vs) renderVocabQuiz(vs);
     }
     if (window.matchMedia("(max-width: 900px)").matches) {
       root.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -931,10 +1244,72 @@
   });
 
   /* ---------- initial render ---------- */
-  const firstBtn = nav.querySelector("button");
-  if (firstBtn) {
-    firstBtn.classList.add("active");
-    const first = data.lessons.find((l) => l.id === firstBtn.dataset.id);
-    if (first) renderLesson(first);
+  if (root) {
+    const params = new URLSearchParams(location.search);
+    const lessonId = params.get("lesson");
+    const testUnit = params.get("test");
+    const prepVariant = params.get("prep");
+    const vquizVariant = params.get("vquiz");
+
+    if (vquizVariant) {
+      const vs = vocabSets.find((s) => String(s.variant) === vquizVariant);
+      const vbtn = nav.querySelectorAll(".prep-variant-btn");
+      const matchBtn = Array.from(vbtn).find((b) => b.textContent.trim() === vquizVariant && b.closest(".prep-nav-details")?.querySelector("summary span")?.textContent === "Vežbanje · Rečnik");
+      if (vs && matchBtn) {
+        matchBtn.classList.add("active");
+        renderVocabQuiz(vs);
+      } else if (vs) {
+        renderVocabQuiz(vs);
+      } else {
+        fallbackFirst();
+      }
+    } else if (testUnit) {
+      const test = testsByUnit.get(Number(testUnit));
+      const tbtn = nav.querySelector(`button[data-test-unit="${CSS.escape(testUnit)}"]`);
+      if (test && tbtn) {
+        tbtn.classList.add("active");
+        renderTest(test);
+      } else if (test) {
+        renderTest(test);
+      } else {
+        fallbackFirst();
+      }
+    } else if (prepVariant) {
+      const pt = data.prep_practice_tests.find((p) => String(p.variant) === prepVariant);
+      const pbtn = nav.querySelector(`.prep-variant-btn`);
+      const matchBtn = pbtn && pbtn.closest(".prep-nav-list")
+        ? Array.from(pbtn.closest(".prep-nav-list").querySelectorAll(".prep-variant-btn")).find(
+            (b) => b.textContent.trim() === prepVariant
+          )
+        : null;
+      if (pt && matchBtn) {
+        matchBtn.classList.add("active");
+        renderPrepPractice(pt);
+      } else if (pt) {
+        renderPrepPractice(pt);
+      } else {
+        fallbackFirst();
+      }
+    } else if (lessonId) {
+      const targetBtn = nav.querySelector(`button[data-id="${CSS.escape(lessonId)}"]`);
+      if (targetBtn) {
+        targetBtn.classList.add("active");
+        const lesson = data.lessons.find((l) => l.id === targetBtn.dataset.id);
+        if (lesson) renderLesson(lesson);
+      } else {
+        fallbackFirst();
+      }
+    } else {
+      fallbackFirst();
+    }
+
+    function fallbackFirst() {
+      const firstBtn = nav.querySelector("button");
+      if (firstBtn) {
+        firstBtn.classList.add("active");
+        const lesson = data.lessons.find((l) => l.id === firstBtn.dataset.id);
+        if (lesson) renderLesson(lesson);
+      }
+    }
   }
 })();

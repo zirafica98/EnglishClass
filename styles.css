@@ -34,8 +34,8 @@ html[data-theme="dark"] {
   --test-light: #6880b8;
   --test-dark: #2a3a5a;
   --test-darker: #3a4a6a;
-  --ok: #3a8a6a;
-  --ok-soft: rgba(58, 138, 106, 0.15);
+  --ok: #4aaa7a;
+  --ok-soft: rgba(74, 170, 122, 0.22);
   --warn: #c9a83a;
   --warn-soft: rgba(201, 168, 58, 0.45);
   --warn-bg: rgba(201, 168, 58, 0.12);
@@ -308,34 +308,45 @@ body {
   color: var(--accent);
   margin: 0 0 0.5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.eyebrow > :first-child {
+  margin-right: auto;
 }
 
 .theme-toggle {
-  border: none;
-  background: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
   cursor: pointer;
-  font-size: 0.75rem;
-  padding: 0.1rem 0.2rem;
-  color: var(--muted);
-  opacity: 0.4;
-  transition: opacity 0.2s, color 0.2s;
+  font-size: 1rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  color: var(--ink);
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s, border-color 0.2s, background 0.2s;
   line-height: 1;
 }
 
 .theme-toggle:hover {
   opacity: 1;
   color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.07);
 }
 
 html[data-theme="dark"] .theme-toggle {
-  color: #fff;
-  opacity: 0.55;
+  border-color: var(--border);
+  background: #2a2824;
+  color: #d4d0c8;
+  opacity: 0.85;
 }
 
 html[data-theme="dark"] .theme-toggle:hover {
   color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(212, 90, 120, 0.15);
   opacity: 1;
 }
 
@@ -1034,6 +1045,224 @@ pre.ocr {
   color: var(--ink);
 }
 
+/* ----------- Vocab quiz ----------- */
+
+.vocab-quiz-start {
+  display: block;
+  margin: 0.75rem auto 0;
+  padding: 0.5rem 1.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.vocab-quiz-start:hover {
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.08);
+}
+
+html[data-theme="dark"] .vocab-quiz-start {
+  background: #2a2824;
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .vocab-quiz-start:hover {
+  border-color: var(--accent);
+}
+
+/* ----------- Vocab quiz ----------- */
+
+.vocab-quiz {
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 1.25rem 1.5rem;
+}
+
+.vocab-quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.vocab-quiz-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.vocab-quiz-score {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.vocab-quiz-word {
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.vocab-quiz-direction {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.vocab-quiz-opts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+}
+
+.vocab-quiz-opts button {
+  width: 100%;
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  text-align: center;
+}
+
+.vocab-quiz-opts button:hover {
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.06);
+}
+
+.vocab-quiz-opts button.correct {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.vocab-quiz-opts button.wrong {
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.1);
+}
+
+.vocab-quiz-opts button:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.vocab-quiz-opts button.correct:disabled {
+  opacity: 1;
+}
+
+.vocab-quiz-feedback {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 1.5em;
+}
+
+.vocab-quiz-next {
+  display: block;
+  margin: 0.75rem auto 0;
+  padding: 0.5rem 1.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.vocab-quiz-next:hover {
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.08);
+}
+
+.vocab-quiz-done {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.vocab-quiz-done p {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.vocab-quiz-done .score-frac {
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.vocab-quiz-reset {
+  margin-top: 0.75rem;
+  padding: 0.45rem 1.25rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.vocab-quiz-reset:hover {
+  border-color: var(--accent);
+}
+
+html[data-theme="dark"] .vocab-quiz {
+  background: rgba(22, 22, 20, 0.55);
+}
+
+html[data-theme="dark"] .vocab-quiz-opts button {
+  background: rgba(42, 40, 36, 0.7);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .vocab-quiz-opts button:hover {
+  background: rgba(212, 90, 120, 0.12);
+  border-color: var(--accent);
+}
+
+html[data-theme="dark"] .vocab-quiz-opts button.correct {
+  background: rgba(74, 170, 122, 0.22);
+  border-color: var(--ok);
+}
+
+html[data-theme="dark"] .vocab-quiz-opts button.wrong {
+  background: rgba(212, 90, 120, 0.2);
+  border-color: var(--accent);
+}
+
+html[data-theme="dark"] .vocab-quiz-next,
+html[data-theme="dark"] .vocab-quiz-reset {
+  background: #2a2824;
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .vocab-quiz-next:hover,
+html[data-theme="dark"] .vocab-quiz-reset:hover {
+  border-color: var(--accent);
+}
+
 /* ----------- Quiz / Unit tests ----------- */
 
 .test-item {
@@ -1616,6 +1845,39 @@ pre.ocr {
   font-size: 0.9rem;
   line-height: 1.5;
   color: var(--ink);
+}
+
+/* ----------- Scroll-to-top button ----------- */
+
+.scroll-top-btn {
+  display: block;
+  margin: 1.5rem auto 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.2s ease;
+  opacity: 0.6;
+}
+
+.scroll-top-btn:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.08);
+}
+
+html[data-theme="dark"] .scroll-top-btn {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+html[data-theme="dark"] .scroll-top-btn:hover {
+  border-color: var(--accent);
+  background: rgba(139, 41, 66, 0.25);
 }
 
 @media print {
