@@ -643,6 +643,11 @@
         ${METHOD_HTML}
       </section>
 
+      <section class="qs-image-link">
+        <p><a href="./quest-image.html" class="qs-image-btn">📷 Primeri gotovih odgovora</a></p>
+        <p class="muted">Pogledaj primere odgovora na pitanja sa opisom slika — korisno za vežbanje vokabulara i gramatičkih struktura.</p>
+      </section>
+
       ${renderToc()}
 
       ${SECTIONS.map(renderSection).join("")}
@@ -756,4 +761,88 @@
       btn.disabled = false;
     }
   });
+
+  /* ---------- sidebar: speaking categories ---------- */
+  const speakNav = document.getElementById("lesson-nav");
+  const speakPane = speakNav ? speakNav.closest(".nav-pane") : null;
+  const speakHead = speakPane ? speakPane.querySelector(".nav-head .label") : null;
+  if (speakHead) speakHead.textContent = "Govor · kategorije";
+
+  if (speakNav) {
+    speakNav.innerHTML = "";
+
+    function clearSpeakActives() {
+      speakNav.querySelectorAll("button.active").forEach((b) => b.classList.remove("active"));
+    }
+
+    const details = document.createElement("details");
+    details.open = true;
+    const sum = document.createElement("summary");
+    sum.textContent = "Govor";
+    const chip = document.createElement("span");
+    chip.className = "unit-chip";
+    chip.textContent = "6 kategorija";
+    sum.append(chip);
+    details.append(sum);
+
+    const ul = document.createElement("ul");
+    ul.className = "qs-nav-list";
+
+    const SHORT_LABELS = {
+      "present-simple": "Pres",
+      "past-simple": "Past",
+      "present-continuous": "PCon",
+      comparatives: "Comp",
+      advice: "Adv",
+      future: "Fut",
+    };
+
+    SECTIONS.forEach((sec) => {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.className = "qs-nav-btn";
+      btn.textContent = sec.title;
+      btn.setAttribute("data-section-id", sec.id);
+      btn.setAttribute("data-short", SHORT_LABELS[sec.id] || sec.title);
+      btn.addEventListener("click", () => {
+        clearSpeakActives();
+        btn.classList.add("active");
+        const el = document.getElementById(sec.id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      li.append(btn);
+      ul.append(li);
+    });
+
+    details.append(ul);
+    speakNav.append(details);
+
+    /* nav link: Primeri gotovih odgovora */
+    const imgLink = document.createElement("a");
+    imgLink.href = "./quest-image.html";
+    imgLink.className = "qs-nav-link";
+    imgLink.textContent = "📷 Primeri gotovih odgovora";
+    speakNav.append(imgLink);
+
+    /* scroll spy — highlight active section */
+    const sectionEls = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean);
+    const speakBtns = SECTIONS.map((s) => speakNav.querySelector(`button[data-section-id="${s.id}"]`)).filter(Boolean);
+
+    function onScroll() {
+      let activeId = null;
+      const scrollY = window.scrollY + 100;
+      for (let i = sectionEls.length - 1; i >= 0; i--) {
+        if (sectionEls[i].offsetTop <= scrollY) {
+          activeId = SECTIONS[i].id;
+          break;
+        }
+      }
+      speakBtns.forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-section-id") === activeId);
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
 })();

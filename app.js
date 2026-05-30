@@ -725,19 +725,14 @@
         </section>
       ` : ""}
 
-      <section class="block book-text">
-        <details>
-          <summary><span>Originalni tekst lekcije iz knjige</span><span class="hint">OCR sa stranice ${escapeHtml(lesson.book_page)}</span></summary>
-          <pre class="ocr">${lessonText || "(tekst nije pronađen u OCR izlazu)"}</pre>
-        </details>
-      </section>
-
+      ${epText ? `
       <section class="block ep">
         <details>
           <summary><span>Extra Practice ${ep.n || "–"} · ${escapeHtml(lesson.code)}</span><span class="hint">${escapeHtml(ep.sb_page_printed || "")}</span></summary>
-          <pre class="ocr">${epText || "(nije pronađen blok za ovu podlekciju u OCR izlazu)"}</pre>
+          <pre class="ocr">${epText}</pre>
         </details>
       </section>
+      ` : ""}
       <button type="button" class="scroll-top-btn" aria-label="Skrol na vrh">↑</button>
     `;
     const stb = root.querySelector(".scroll-top-btn");
@@ -852,6 +847,7 @@
     showItem();
   }
 
+  if (root) {
   orderedKeys.forEach((key, idx) => {
     const lessons = byUnit.get(key);
     const details = document.createElement("details");
@@ -1064,6 +1060,7 @@
     });
     vqDetails.appendChild(vqUl);
     nav.appendChild(vqDetails);
+  }
   }
 
   function renderVocabQuiz(set) {

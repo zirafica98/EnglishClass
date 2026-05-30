@@ -528,3 +528,127 @@ body {
 .qs-ai-box .qs-ai-struct p {
   margin: 0;
 }
+
+.qs-image-link {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 28px rgba(18, 32, 42, 0.06);
+}
+.qs-image-link p {
+  margin: 0;
+}
+.qs-image-link .muted {
+  margin-top: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.qs-image-btn {
+  display: inline-block;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: filter 0.15s;
+}
+.qs-image-btn:hover {
+  filter: brightness(1.08);
+  text-decoration: none;
+}
+
+/* ---------- Govor sidebar nav ---------- */
+#lesson-nav .qs-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+#lesson-nav .qs-nav-list li {
+  margin: 0;
+}
+
+#lesson-nav .qs-nav-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#lesson-nav .qs-nav-btn:hover {
+  background: rgba(13, 110, 122, 0.1);
+  border-color: rgba(13, 110, 122, 0.2);
+}
+
+#lesson-nav .qs-nav-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+#lesson-nav .qs-nav-link {
+  display: block;
+  margin: 0.75rem 0.5rem 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  text-align: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+#lesson-nav .qs-nav-link:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* collapsed desktop nav — tight horizontal strip */
+.nav-collapsed #lesson-nav .qs-nav-list {
+  padding: 0.35rem 0.25rem;
+  gap: 0.15rem;
+}
+
+.nav-collapsed #lesson-nav .qs-nav-btn {
+  font-size: 0;
+  padding: 0.3rem 0;
+  text-align: center;
+  border: none;
+  background: transparent;
+}
+
+.nav-collapsed #lesson-nav .qs-nav-btn::before {
+  content: attr(data-short);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.nav-collapsed #lesson-nav .qs-nav-btn:hover {
+  background: rgba(13, 110, 122, 0.1);
+}
+
+.nav-collapsed #lesson-nav .qs-nav-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.nav-collapsed #lesson-nav .qs-nav-link {
+  display: none;
+}
